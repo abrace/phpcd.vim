@@ -128,6 +128,8 @@ class PHPCD implements RpcHandler
                 } elseif ($reflection->hasProperty($method_name)) {
                     $line = $this->getPropertyDefLine($reflection, $method_name);
                     return [$reflection->getFileName(), $line];
+                } elseif ($method_name) {
+                    return ['', null];
                 }
             } else {
                 $reflection = new \ReflectionFunction($method_name);
