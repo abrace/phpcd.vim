@@ -1,13 +1,14 @@
+" Code dealing with test buffers is placed in 'try' blocks, and wiping of test
+" buffers is done in 'finally' blocks, to ensure that the buffers are wiped
+" even if an exception is thrown from the test code.  Unfortunately this
+" prevents Vimunit from showing the correct line numbers for failed
+" assertions; try to compensate by having a message for each assertion.
+
 fun! TestCase_expect_public_property()
 	let path =  expand('%:p:h')."/".'fixtures/PHPCD/B/C/ExpectPublicVariable.php'
 	below 1new
 	exe ":silent! edit ".path
 
-	" Put test code under a 'try' and wipe out the test buffer in a 'finally'
-	" clause to ensure that the buffer is wiped even if an exception is thrown.
-	" Unfortunately this prevents Vimunit from showing the correct line
-	" numbers for failed assertions; try to compensate by having a message for
-	" each assertion.
 	try
 		call cursor(11, 18)
 		let start = phpcd#CompletePHP(1, '')
@@ -43,7 +44,7 @@ fun! TestCase_expect_constant()
 	try
 		call cursor(9, 27)
 		let start = phpcd#CompletePHP(1, '')
-		call VUAssertEquals(24, start)
+		call VUAssertEquals(24, start, 'completion start column should be 24')
 		let base = 'i'
 		let res = phpcd#CompletePHP(0, base)
 
@@ -53,7 +54,8 @@ fun! TestCase_expect_constant()
 		for item in res
 			call VUAssertEquals(
 				\'d',
-				\item.kind)
+				\item.kind,
+				\'expected item.kind to be "d"')
 		endfor
 	finally
 		silent! bw! %
