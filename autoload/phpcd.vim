@@ -214,7 +214,13 @@ function! phpcd#GetCurrentSymbolWithContext() " {{{
 	let context = substitute(current_instruction, 'clone ', '', '')
 	let context = substitute(current_instruction, 'yield from', '', '')
 	let context = substitute(current_instruction, 'yield ', '', '')
-	let context = substitute(context, '\s*[$a-zA-Z_0-9\\\x7f-\xff]*$', '', '')
+
+	" If the context is 'new', the pattern below reduces that to '', so use a
+	" special case.
+	if context !=# 'new'
+		let context = substitute(context, '\s*[$a-zA-Z_0-9\\\x7f-\xff]*$', '', '')
+	endif
+
 	let context = substitute(context, '\s\+\([\-:]\)', '\1', '')
 
 	let [current_namespace, current_imports] = phpcd#GetCurrentNameSpace()
@@ -275,8 +281,14 @@ function! phpcd#LocateSymbol(symbol, symbol_context, symbol_namespace, current_i
 		return [path, line, 0] " }}}
 	else " {{{
 		if a:symbol =~ '\v\C^[A-Z]'
-			let [classname, namespace] = phpcd#ExpandClassName(a:symbol, a:symbol_namespace, a:current_imports)
-			let full_classname = s:GetFullName(namespace, classname)
+			" This way of getting full_classname, copied from the ['new',
+			" 'use'...] case, is needed to satisfy TestCase_jump_SameB_class_start.
+			" I don't know the purpose of the old, commented-out code below.
+			let full_classname = s:GetFullName(a:symbol_namespace, a:symbol)
+
+			" let [classname, namespace] = phpcd#ExpandClassName(a:symbol, a:symbol_namespace, a:current_imports)
+			" let full_classname = s:GetFullName(namespace, classname)
+
 			let [path, line] = rpc#request(g:phpcd_channel_id, 'location', full_classname)
 		else
 			let [path, line] = rpc#request(g:phpcd_channel_id, 'location', '', a:symbol_namespace.'\'.a:symbol)
