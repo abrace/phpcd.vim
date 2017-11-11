@@ -1,6 +1,10 @@
 <?php
 namespace PHPCD\SameName\A;
 
-class Same
+class Same extends SuperSame
 {
+    function mm()
+    {
+
+    }
 }
