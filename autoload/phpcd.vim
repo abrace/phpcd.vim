@@ -210,8 +210,29 @@ function! phpcd#GetCurrentSymbolWithContext() " {{{
 	" function call
 	let word = substitute(word, '\v\c[^\\a-zA-Z_0-9$]*$', '', '')
 
-	let current_instruction = phpcd#GetCurrentInstruction(line('.'), max([0, col('.') - 2]), phpbegin)
+	let context = s:getCurrentContext(phpbegin)
+
+	let [current_namespace, current_imports] = phpcd#GetCurrentNameSpace()
+	if word != ''
+		let [symbol, symbol_namespace] = phpcd#ExpandClassName(word, current_namespace, current_imports)
+	else
+		let [symbol, symbol_namespace] = [word, current_namespace]
+	endif
+
+	return [symbol, context, symbol_namespace, current_imports]
+endfunction " }}}
+
+function! s:getCurrentContext(phpbegin) " {{{
+	let current_instruction = phpcd#GetCurrentInstruction(
+		\line('.'),
+		\max([0, col('.') - 2]),
+		\a:phpbegin
+	\)
+
 	let context = substitute(current_instruction, 'clone ', '', '')
+
+	" XXX calling substitute() below on current_instruction instead of context
+	" seems wrong.
 	let context = substitute(current_instruction, 'yield from', '', '')
 	let context = substitute(current_instruction, 'yield ', '', '')
 
@@ -223,14 +244,7 @@ function! phpcd#GetCurrentSymbolWithContext() " {{{
 
 	let context = substitute(context, '\s\+\([\-:]\)', '\1', '')
 
-	let [current_namespace, current_imports] = phpcd#GetCurrentNameSpace()
-	if word != ''
-		let [symbol, symbol_namespace] = phpcd#ExpandClassName(word, current_namespace, current_imports)
-	else
-		let [symbol, symbol_namespace] = [word, current_namespace]
-	endif
-
-	return [symbol, context, symbol_namespace, current_imports]
+	return context
 endfunction " }}}
 
 function! phpcd#LocateSymbol(symbol, symbol_context, symbol_namespace, current_imports) " {{{
