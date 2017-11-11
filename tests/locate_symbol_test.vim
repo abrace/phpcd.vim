@@ -4,39 +4,39 @@
 " prevents Vimunit from showing the correct line numbers for failed
 " assertions; try to compensate by having a message for each assertion.
 
-function! TestCase_jump_new_Same_start()
-	call s:check_jump(11, 18, 'A', 'new', 4, 0)
+function! TestCase_locate_new_Same_start()
+	call s:check_locate(11, 18, 'A', 'new', 4, 0)
 endfunction
 
-function! TestCase_jump_new_Same_mid()
-	call s:check_jump(11, 19, 'A', 'new', 4, 0)
+function! TestCase_locate_new_Same_mid()
+	call s:check_locate(11, 19, 'A', 'new', 4, 0)
 endfunction
 
-function! TestCase_jump_new_SameB_start()
-	call s:check_jump(12, 18, 'B', 'new', 4, 0)
+function! TestCase_locate_new_SameB_start()
+	call s:check_locate(12, 18, 'B', 'new', 4, 0)
 endfunction
 
-function! TestCase_jump_new_SameB_mid()
-	call s:check_jump(12, 19, 'B', 'new', 4, 0)
+function! TestCase_locate_new_SameB_mid()
+	call s:check_locate(12, 19, 'B', 'new', 4, 0)
 endfunction
 
-function! TestCase_jump_Same_class_start()
-	call s:check_jump(13, 9, 'A', '', 4, 0)
+function! TestCase_locate_Same_class_start()
+	call s:check_locate(13, 9, 'A', '', 4, 0)
 endfunction
 
-function! TestCase_jump_Same_class_mid()
-	call s:check_jump(13, 10, 'A', '', 4, 0)
+function! TestCase_locate_Same_class_mid()
+	call s:check_locate(13, 10, 'A', '', 4, 0)
 endfunction
 
-function! TestCase_jump_SameB_class_start()
-	call s:check_jump(14, 9, 'B', '', 4, 0)
+function! TestCase_locate_SameB_class_start()
+	call s:check_locate(14, 9, 'B', '', 4, 0)
 endfunction
 
-function! TestCase_jump_SameB_class_mid()
-	call s:check_jump(14, 10, 'B', '', 4, 0)
+function! TestCase_locate_SameB_class_mid()
+	call s:check_locate(14, 10, 'B', '', 4, 0)
 endfunction
 
-function! s:check_jump(
+function! s:check_locate(
 	\cursor_line,
 	\cursor_column,
 	\expected_namespace,
@@ -45,7 +45,7 @@ function! s:check_jump(
 	\expected_column)
 
 	let path_base = expand('%:p:h') . '/fixtures/PHPCD/'
-	let path_to_edit = path_base . 'B/C/ExpectJumpToRightClass.php'
+	let path_to_edit = path_base . 'B/C/ExpectLocateRightClass.php'
 	let expected_path = path_base . 'SameName/' . a:expected_namespace . '/Same.php'
 	below 1new
 	exec ':silent! edit ' . path_to_edit
