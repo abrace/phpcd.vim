@@ -1,4 +1,5 @@
 let s:phpcd_path = expand('<sfile>:p:h:h') . '/php/main.php'
+let s:unknown_location = ['', '', '']
 
 function! phpcd#CompletePHP(findstart, base) " {{{
 	" we need to wait phpcd {{{
@@ -248,17 +249,18 @@ function! s:getCurrentContext(phpbegin) " {{{
 endfunction " }}}
 
 function! phpcd#LocateSymbol(symbol, symbol_context, symbol_namespace, current_imports) " {{{
-	let unknow_location = ['', '', '']
-
-	" are we looking for a method?
-	if a:symbol_context =~ '\(->\|::\)$' " {{{
-		" Get name of the class
+	" are we looking for a static method or class constant?
+	if a:symbol_context =~ '::$' " {{{
 		let classname = phpcd#GetClassName(line('.'), a:symbol_context, a:symbol_namespace, a:current_imports)
-
-		" Get location of class definition, we have to iterate through all
 		if classname != ''
-			let [path, line] = rpc#request(g:phpcd_channel_id, 'location', classname, a:symbol)
-			return [path, line, 0]
+			let [path, lineOrConst] = rpc#request(g:phpcd_channel_id, 'location', classname, a:symbol)
+			return [path, lineOrConst, 0]
+		endif " }}}
+	" are we looking for an instance method or property?
+	elseif a:symbol_context =~ '->$' " {{{
+		let classname = phpcd#GetClassName(line('.'), a:symbol_context, a:symbol_namespace, a:current_imports)
+		if classname != ''
+			return s:locateInstanceMethodOrProperty(classname, a:symbol)
 		endif " }}}
 	elseif index(['new', 'use', 'implements', 'extends'], a:symbol_context) > -1 " {{{
 		let full_classname = s:GetFullName(a:symbol_namespace, a:symbol)
@@ -314,7 +316,24 @@ function! phpcd#LocateSymbol(symbol, symbol_context, symbol_namespace, current_i
 		return [path, line, 0]
 	endif " }}}
 
-	return unknow_location
+	return s:unknown_location
+endfunction " }}}
+
+function! s:locateInstanceMethodOrProperty(classname, symbol) " {{{
+	let trimmed_classname = substitute(a:classname, '^\\', '', '')
+	let result = rpc#request(
+		\g:phpcd_channel_id,
+		\'locateInstanceMethodOrProperty',
+		\trimmed_classname,
+		\a:symbol)
+
+	if empty(result)
+		return s:unknown_location
+	endif
+
+	let selected_class = phpcd#SelectOne(keys(result))
+	let [path, line] = result[selected_class]
+	return [path, line, 0]
 endfunction " }}}
 
 function! phpcd#SelectOne(items) " {{{

@@ -182,6 +182,50 @@ class PHPCD implements RpcHandler
     }
 
     /**
+     * @param string $class_name
+     * @param string $method_name
+     * @return array
+     */
+    public function locateInstanceMethodOrProperty($class_name, $method_name)
+    {
+        $subclasses = PHPID::lsByRoot($this->root, $class_name, false);
+        $classes = array_merge([$class_name], $subclasses);
+        return $this->locateInstanceMethodOrPropertyInClasses($classes, $method_name);
+    }
+
+    /**
+     * @param array $classes
+     * @param string $method_name
+     * @return array
+     */
+    private function locateInstanceMethodOrPropertyInClasses($classes, $method_name)
+    {
+        $ret = [];
+
+        foreach ($classes as $class_name) {
+            if (!is_string($class_name) || !class_exists($class_name)) {
+                $this->logger->error('locateInstanceMethodOrPropertyInClasses: invalid class name.');
+                continue;
+            }
+            $reflectionClass = new \ReflectionClass($class_name);
+            if ($reflectionClass->hasMethod($method_name)) {
+                $reflectionMethod = $reflectionClass->getMethod($method_name);
+                $ret[$class_name] = [
+                    $reflectionMethod->getFileName(),
+                    $reflectionMethod->getStartLine(),
+                ];
+            } elseif ($reflectionClass->hasProperty($method_name)) {
+                $ret[$class_name] = [
+                    $reflectionClass->getFileName(),
+                    $this->getPropertyDefLine($reflectionClass, $method_name),
+                ];
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
      * Fetch function, class method or class attribute's docblock
      *
      * @param string $class_name for function set this args to empty
