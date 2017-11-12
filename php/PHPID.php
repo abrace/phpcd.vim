@@ -57,18 +57,31 @@ class PHPID implements RpcHandler
      * or an abstract class's child class.
      *
      * @param string $name name of interface or abstract class
-     * @param bool $is_abstract_class
+     * @param bool $is_interface
      *
      * @return [
      *   'full class name 1',
      *   'full class name 2',
      * ]
      */
-    public function ls($name, $is_abstract_class = false)
+    public function ls($name, $is_interface = false)
     {
-        $base_path = $is_abstract_class ? $this->getIntefacesDir()
-            : $this->getExtendsDir();
-        $path = $base_path . '/' . $this->getIndexFileName($name);
+        return self::lsByRoot($this->root, $name, $is_interface);
+    }
+
+    /**
+     * @param string $root
+     * @param string $name
+     * @param bool $is_interface
+     * @return array
+     */
+    public static function lsByRoot($root, $name, $is_interface)
+    {
+        $base_path = $is_interface ?
+            self::getInterfacesDirImpl($root) :
+            self::getExtendsDirImpl($root);
+
+        $path = $base_path . '/' . self::getIndexFileName($name);
         if (!is_file($path)) {
             return [];
         }
@@ -126,19 +139,29 @@ class PHPID implements RpcHandler
         return $files;
     }
 
-    private function getIndexDir()
+    private static function getIndexDir($root)
     {
-        return $this->root . '/.phpcd';
+        return $root . '/.phpcd';
     }
 
-    private function getIntefacesDir()
+    private function getInterfacesDir()
     {
-        return $this->getIndexDir() . '/interfaces';
+        return self::getInterfacesDirImpl($this->root);
+    }
+
+    private static function getInterfacesDirImpl($root)
+    {
+        return self::getIndexDir($root) . '/interfaces';
     }
 
     private function getExtendsDir()
     {
-        return $this->getIndexDir() . '/extends';
+        return self::getExtendsDirImpl($this->root);
+    }
+
+    private static function getExtendsDirImpl($root)
+    {
+        return self::getIndexDir($root) . '/extends';
     }
 
     private function initIndexDir()
@@ -148,7 +171,7 @@ class PHPID implements RpcHandler
             mkdir($extends_dir, 0700, true);
         }
 
-        $interfaces_dir = $this->getIntefacesDir();
+        $interfaces_dir = $this->getInterfacesDir();
         if (!is_dir($interfaces_dir)) {
             mkdir($interfaces_dir, 0700, true);
         }
@@ -162,7 +185,7 @@ class PHPID implements RpcHandler
 
     private function updateInterfaceIndex($interface, $implementation)
     {
-        $index_file = $this->getIntefacesDir() . '/' . $this->getIndexFileName($interface);
+        $index_file = $this->getInterfacesDir() . '/' . $this->getIndexFileName($interface);
         $this->saveChild($index_file, $implementation);
     }
 
@@ -185,7 +208,7 @@ class PHPID implements RpcHandler
         file_put_contents($index_file, json_encode($childs));
     }
 
-    private function getIndexFileName($name)
+    private static function getIndexFileName($name)
     {
         return str_replace("\\", '_', $name).'.json';
     }
