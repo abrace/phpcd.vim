@@ -36,6 +36,10 @@ function! TestCase_locate_SameB_class_mid()
 	call s:check_locate_right_class(14, 10, 'B', '', 4, 0)
 endfunction
 
+function! TestCase_locate_impl_start()
+	call s:check_locate_impl(6, 23, 'A', 'abstract function', 6, 0)
+endfunction
+
 function! TestCase_locate_impl_mid()
 	call s:check_locate_impl(6, 24, 'A', 'abstract function', 6, 0)
 endfunction
