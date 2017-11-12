@@ -236,12 +236,12 @@ function! s:getCurrentContext(phpbegin) " {{{
 	let context = substitute(current_instruction, 'yield from', '', '')
 	let context = substitute(current_instruction, 'yield ', '', '')
 
-	" If the context is 'new', the pattern below reduces that to '', so use a
-	" special case.
-	if context !=# 'new'
-		let context = substitute(context, '\s*[$a-zA-Z_0-9\\\x7f-\xff]*$', '', '')
+	" Certain predefined contexts should be returned unaltered.
+	if context ==# 'new' || context ==# 'abstract function'
+		return context
 	endif
 
+	let context = substitute(context, '\s*[$a-zA-Z_0-9\\\x7f-\xff]*$', '', '')
 	let context = substitute(context, '\s\+\([\-:]\)', '\1', '')
 
 	return context
