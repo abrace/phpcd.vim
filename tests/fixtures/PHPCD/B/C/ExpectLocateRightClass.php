@@ -10,7 +10,14 @@ class ExpectJumpToRightClass
     {
         $a = new Same();
         $b = new SameB();
-        Same::class;
-        SameB::class;
+
+        $a->pa;
+        $b->pa;
+
+        Same::CA;
+        SameB::CA;
+
+        Same::getInstance()->na();
+        Same::getInstance()->nb();
     }
 }
