@@ -299,7 +299,10 @@ function! phpcd#LocateSymbol(symbol, symbol_context, symbol_namespace, current_i
 		if a:symbol =~ '\v\C^[A-Z]'
 			" This way of getting full_classname, copied from the ['new',
 			" 'use'...] case, is needed to satisfy TestCase_jump_SameB_class_start.
-			" I don't know the purpose of the old, commented-out code below.
+			" The old, commented-out code below may cause a double classname
+			" expansion that causes the test to fail.
+			" But, I don't know if there are other cases in which classname
+			" expansion is actully needed here.
 			let full_classname = s:GetFullName(a:symbol_namespace, a:symbol)
 
 			" let [classname, namespace] = phpcd#ExpandClassName(a:symbol, a:symbol_namespace, a:current_imports)
@@ -573,16 +576,24 @@ function! phpcd#GetCallChainReturnType(classname_candidate, class_candidate_name
 		endif
 	endif " }}}
 
-	if (len(methodstack) == 1) " {{{
-		let [classname_candidate, class_candidate_namespace] = phpcd#ExpandClassName(classname_candidate, class_candidate_namespace, imports)
-		let return_type = s:GetFullName(class_candidate_namespace, classname_candidate)
+	let [classname_candidate, class_candidate_namespace] = phpcd#ExpandClassName(classname_candidate, class_candidate_namespace, imports)
+	return phpcd#GetCallChainReturnTypeExpanded(classname_candidate, class_candidate_namespace, imports, methodstack)
+endfunction
 
-		return return_type
+function! phpcd#GetCallChainReturnTypeExpanded(classname_candidate, class_candidate_namespace, imports, methodstack) " {{{
+	let classname_candidate = a:classname_candidate " {{{
+	let class_candidate_namespace = a:class_candidate_namespace
+	let imports = a:imports
+	let methodstack = a:methodstack
+	let unknown_result = '' " }}}
+
+	let full_classname = s:GetFullName(class_candidate_namespace, classname_candidate)
+
+	if (len(methodstack) == 1) " {{{
+		return full_classname
 	endif " }}}
 
 	call remove(methodstack, 0)
-	let [classname_candidate, class_candidate_namespace] = phpcd#ExpandClassName(classname_candidate, class_candidate_namespace, imports)
-	let full_classname = s:GetFullName(class_candidate_namespace, classname_candidate)
 
 	if methodstack[0] =~ '('
 		let method = matchstr(methodstack[0], '\v^\$*\zs[^[(]+\ze')
@@ -833,7 +844,8 @@ function! phpcd#GetClassName(start_line, context, current_namespace, imports) " 
 				if classname_candidate[0] == '\'
 					return classname_candidate
 				endif
-				let [classname_candidate, class_candidate_namespace] = phpcd#ExpandClassName(classname_candidate, a:current_namespace, a:imports)
+				" TODO do this for other ExpandClassName calls?
+				let [expanded_classname_candidate, expanded_class_candidate_namespace] = phpcd#ExpandClassName(classname_candidate, a:current_namespace, a:imports)
 				break
 			endif " }}}
 
@@ -1007,6 +1019,9 @@ function! phpcd#GetClassName(start_line, context, current_namespace, imports) " 
 			let i += 1
 		endfor " }}}
 
+		if exists('expanded_classname_candidate') && expanded_classname_candidate != '' " {{{
+			return phpcd#GetCallChainReturnTypeExpanded(expanded_classname_candidate, expanded_class_candidate_namespace, class_candidate_imports, methodstack)
+		endif " }}}
 		if classname_candidate != '' " {{{
 			return phpcd#GetCallChainReturnType(classname_candidate, class_candidate_namespace, class_candidate_imports, methodstack)
 		endif " }}}
