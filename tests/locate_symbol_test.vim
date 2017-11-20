@@ -8,6 +8,7 @@ let s:supersame_mm_line = 18
 let s:same_mm_line = 12
 let s:same_na_line = 16
 let s:same_pa_use_line = 14
+let s:sameb_pa_use_line = 15
 let s:same_ca_use_line = 17
 let s:sameb_ca_use_line = 18
 let s:same_getinstance_na_call_line = 20
@@ -34,7 +35,11 @@ function! TestCase_locate_new_SameB_mid()
 endfunction
 
 function! TestCase_locate_Same_pa()
-	call s:check_locate_right_class(s:same_pa_use_line, 14, s:same_path, '$a->', 10, 0)
+	call s:check_locate_right_class(s:same_pa_use_line, 13, s:same_path, '$a->', 10, 0)
+endfunction
+
+function! TestCase_locate_Sameb_pa()
+	call s:check_locate_right_class(s:sameb_pa_use_line, 13, s:sameb_path, '$b->', 8, 0)
 endfunction
 
 function! TestCase_locate_Same_class_start()
