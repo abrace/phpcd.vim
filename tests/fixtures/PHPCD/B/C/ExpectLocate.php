@@ -2,20 +2,20 @@
 namespace PHPCD\B\C;
 
 use PHPCD\SameName\A\Same;
-use PHPCD\SameName\B\Same as SameB;
+use PHPCD\SameName\B\Same as BSame;
 
-class ExpectJumpToRightClass
+class ExpectLocate
 {
     public function xxx()
     {
         $a = new Same();
-        $b = new SameB();
+        $b = new BSame();
 
         $a->pa;
         $b->pa;
 
         Same::CA;
-        SameB::CA;
+        BSame::CA;
 
         Same::getInstance()->na();
         Same::getInstance()->nb();
