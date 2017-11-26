@@ -14,6 +14,10 @@ class ExpectLocate
         $a->pa;
         $b->pa;
 
+        $a->na();
+        $b->na();
+        $a->nb();
+
         Same::CA;
         BSame::CA;
 

@@ -14,28 +14,36 @@ let s:asame_locations = {
 	\'class_start': {'line': 4, 'col': 1},
 	\'property': {'line': 10, 'col': 13},
 	\'abstract_method_impl': {'line': 12, 'col': 14},
-	\'simple_method': {'line': 16, 'col': 14}}
+	\'simple_method': {'line': 16, 'col': 14},
+\}
 
 let s:bsame_locations = {
 	\'class_start': {'line': 4, 'col': 1},
-	\'property': {'line': 8, 'col': 13}}
+	\'property': {'line': 8, 'col': 13},
+	\'simple_method': {'line': 10, 'col': 14},
+\}
 
 let s:supersame_locations = {
 	\'static_method': {'line': 9, 'col': 28},
-	\'abstract_method': {'line': 18, 'col': 23}}
+	\'abstract_method': {'line': 18, 'col': 23},
+\}
 
 let s:expect_locate_locations = {
 	\'new_asame_class': {'line': 11, 'col': 18},
 	\'new_bsame_class': {'line': 12, 'col': 18},
 	\'asame_property_use': {'line': 14, 'col': 13},
 	\'bsame_property_use': {'line': 15, 'col': 13},
-	\'asame_class_use': {'line': 17, 'col': 9},
-	\'asame_const_use': {'line': 17, 'col': 15},
-	\'bsame_class_use': {'line': 18, 'col': 9},
-	\'bsame_const_use': {'line': 18, 'col': 16},
-	\'super_method_use': {'line': 20, 'col': 15},
-	\'asame_method_use': {'line': 20, 'col': 30},
-	\'nonexist_method_use': {'line': 21, 'col': 30}}
+	\'asame_method_use': {'line': 17, 'col': 13},
+	\'bsame_method_use': {'line': 18, 'col': 13},
+	\'nonexist_method_use': {'line': 19, 'col': 13},
+	\'asame_class_use': {'line': 21, 'col': 9},
+	\'asame_const_use': {'line': 21, 'col': 15},
+	\'bsame_class_use': {'line': 22, 'col': 9},
+	\'bsame_const_use': {'line': 22, 'col': 16},
+	\'super_method_use': {'line': 24, 'col': 15},
+	\'asame_method_chained_use': {'line': 24, 'col': 30},
+	\'nonexist_method_chained_use': {'line': 25, 'col': 30},
+\}
 
 let s:asame_info = {'path': s:asame_path, 'locations': s:asame_locations}
 let s:bsame_info = {'path': s:bsame_path, 'locations': s:bsame_locations}
@@ -62,6 +70,36 @@ endfunction
 
 function! TestCaseLocateBSameProperty()
 	call s:checkLocateProperty(s:expect_locate_locations.bsame_property_use, '$b->', s:bsame_info)
+endfunction
+
+function! TestCaseLocateASameMethodStart()
+	let cursor_location = s:expect_locate_locations.asame_method_use
+	call s:checkLocateBasic(cursor_location, s:asame_path, '$a->', s:asame_locations.simple_method.line)
+endfunction
+
+function! TestCaseLocateASameMethodMid()
+	let cursor_location = s:offsetColumn(s:expect_locate_locations.asame_method_use, 1)
+	call s:checkLocateBasic(cursor_location, s:asame_path, '$a->', s:asame_locations.simple_method.line)
+endfunction
+
+function! TestCaseLocateBSameMethodStart()
+	let cursor_location = s:expect_locate_locations.bsame_method_use
+	call s:checkLocateBasic(cursor_location, s:bsame_path, '$b->', s:bsame_locations.simple_method.line)
+endfunction
+
+function! TestCaseLocateBSameMethodMid()
+	let cursor_location = s:offsetColumn(s:expect_locate_locations.bsame_method_use, 1)
+	call s:checkLocateBasic(cursor_location, s:bsame_path, '$b->', s:bsame_locations.simple_method.line)
+endfunction
+
+function! TestCaseLocateNonexistentMethodStart()
+	let cursor_location = s:expect_locate_locations.nonexist_method_use
+	call s:checkLocateNonexistentMethod(cursor_location.line, cursor_location.col, '$a->')
+endfunction
+
+function! TestCaseLocateNonexistentMethodMid()
+	let cursor_location = s:offsetColumn(s:expect_locate_locations.nonexist_method_use, 1)
+	call s:checkLocateNonexistentMethod(cursor_location.line, cursor_location.col, '$a->')
 endfunction
 
 function! TestCaseLocateASameClassStart()
@@ -95,23 +133,23 @@ function! TestCaseLocateSuperMethod()
 	call s:checkLocateBasic(cursor_location, s:supersame_path, 'Same::', s:supersame_locations.static_method.line)
 endfunction
 
-function! TestCaseLocateASameMethodStart()
-	let cursor_location = s:expect_locate_locations.asame_method_use
+function! TestCaseLocateASameMethodChainedStart()
+	let cursor_location = s:expect_locate_locations.asame_method_chained_use
 	call s:checkLocateBasic(cursor_location, s:asame_path, 'Same::getInstance()->', s:asame_locations.simple_method.line)
 endfunction
 
-function! TestCaseLocateASameMethodMid()
-	let cursor_location = s:offsetColumn(s:expect_locate_locations.asame_method_use, 1)
+function! TestCaseLocateASameMethodChainedMid()
+	let cursor_location = s:offsetColumn(s:expect_locate_locations.asame_method_chained_use, 1)
 	call s:checkLocateBasic(cursor_location, s:asame_path, 'Same::getInstance()->', s:asame_locations.simple_method.line)
 endfunction
 
-function! TestCaseLocateNonexistentMethodStart()
-	let cursor_location = s:expect_locate_locations.nonexist_method_use
+function! TestCaseLocateNonexistentMethodChainedStart()
+	let cursor_location = s:expect_locate_locations.nonexist_method_chained_use
 	call s:checkLocateNonexistentMethod(cursor_location.line, cursor_location.col, 'Same::getInstance()->')
 endfunction
 
-function! TestCaseLocateNonexistentMethodMid()
-	let cursor_location = s:offsetColumn(s:expect_locate_locations.nonexist_method_use, 1)
+function! TestCaseLocateNonexistentMethodChainedMid()
+	let cursor_location = s:offsetColumn(s:expect_locate_locations.nonexist_method_chained_use, 1)
 	call s:checkLocateNonexistentMethod(cursor_location.line, cursor_location.col, 'Same::getInstance()->')
 endfunction
 

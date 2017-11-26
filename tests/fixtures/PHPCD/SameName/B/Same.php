@@ -6,4 +6,8 @@ class Same
     const CA = 2;
 
     public $pa;
+
+    function na()
+    {
+    }
 }
