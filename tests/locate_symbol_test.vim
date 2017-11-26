@@ -32,11 +32,17 @@ let s:expect_locate_locations = {
 	\'new_asame_class': {'line': 11, 'col': 18},
 	\'new_bsame_class': {'line': 12, 'col': 18},
 	\'asame_property_use': {'line': 14, 'col': 13},
+	\'bsame_property_use': {'line': 15, 'col': 13},
 	\'asame_method_use': {'line': 17, 'col': 13},
+	\'bsame_method_use': {'line': 18, 'col': 13},
+	\'nonexist_method_use': {'line': 19, 'col': 13},
 	\'asame_class_use': {'line': 21, 'col': 9},
 	\'asame_const_use': {'line': 21, 'col': 15},
+	\'bsame_class_use': {'line': 22, 'col': 9},
 	\'bsame_const_use': {'line': 22, 'col': 16},
 	\'super_method_use': {'line': 24, 'col': 15},
+	\'asame_method_chained_use': {'line': 24, 'col': 30},
+	\'nonexist_method_chained_use': {'line': 25, 'col': 30},
 \}
 
 let s:asame_info = {'path': s:asame_path, 'locations': s:asame_locations}
